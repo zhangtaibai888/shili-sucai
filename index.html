@@ -109,7 +109,7 @@ footer .link{margin-top:14px;font-size:12px;color:var(--faint);text-decoration:n
   <div class="pbox">
     <button id="pClose" aria-label="关闭">×</button>
     <p class="ptitle" id="pTitle"></p>
-    <video id="pVideo" controls playsinline></video>
+    <video id="pVideo" controls playsinline type="video/mp4"></video>
   </div>
 </div>
 
@@ -201,9 +201,22 @@ var DEFAULTS={
   _admin:{password:'admin'}
 };
 var CONTENT=null, VIDEOS={videos:[]}, activeCat='all', unlocked=sessionStorage.getItem(SS_OK)==='1';
-/* 双环境自适应：github.io 同源用相对路径；其他环境（豆包短链发布页）用绝对地址加载数据和视频 */
-var BASE='';
-if(location.protocol!=='file:'&&location.hostname.indexOf('github.io')<0){BASE='https://zhangtaibai888.github.io/shili-sucai/';}
+/* 数据源：始终从 GitHub 仓库拉最新内容；不可达时回退到内联快照 */
+var DATA='https://zhangtaibai888.github.io/shili-sucai/';
+/* 内联快照：github.io 不可达（部分国内手机网络）时页面仍能显示文字与视频列表 */
+var VIDEOS_INLINE={"videos":[
+  {"id":"v01","file":"VID_20260729_095409.mp4","title":"手机实拍 01","category":"mendian"},
+  {"id":"v02","file":"VID_20260522_142313.mp4","title":"手机实拍 02","category":"mendian"},
+  {"id":"v03","file":"VID_20260729_095441.mp4","title":"手机实拍 03","category":"mendian"},
+  {"id":"v04","file":"VID_20260710_093715.mp4","title":"手机实拍 04","category":"mendian"},
+  {"id":"v05","file":"VID_20260522_141806.mp4","title":"手机实拍 05","category":"mendian"},
+  {"id":"v06","file":"VID_20260522_141756.mp4","title":"手机实拍 06","category":"mendian"},
+  {"id":"v07","file":"DJI_20260724100023_0720_D.mp4","title":"无人机航拍 01","category":"mendian"},
+  {"id":"v08","file":"DJI_20260724103644_0791_D.mp4","title":"无人机航拍 02","category":"mendian"},
+  {"id":"v09","file":"DJI_20260724102844_0781_D.mp4","title":"无人机航拍 03","category":"mendian"},
+  {"id":"v10","file":"手机豆包画面.mp4","title":"豆包手机画面","category":"jingwu"}
+]};
+/* 视频与封面用相对路径：在 github.io 同源加载；在豆包发布页打包进应用同源加载，手机任何网络都能播 */
 
 function $(s){return document.querySelector(s);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
@@ -217,12 +230,12 @@ function countIn(id){return VIDEOS.videos.filter(function(v){return id==='all'||
 function init(){
   var p;
   if(location.protocol==='file:'){
-    /* 本地双击预览：无服务器环境，直接用内置默认数据 */
-    CONTENT=JSON.parse(JSON.stringify(DEFAULTS));VIDEOS={videos:[]};p=Promise.resolve();
+    /* 本地双击预览：无服务器环境，用内置默认数据 */
+    CONTENT=JSON.parse(JSON.stringify(DEFAULTS));VIDEOS=JSON.parse(JSON.stringify(VIDEOS_INLINE));p=Promise.resolve();
   }else{
-    p=readJson(BASE+'content.json').then(function(c){CONTENT=c;}).catch(function(){CONTENT=JSON.parse(JSON.stringify(DEFAULTS));})
-     .then(function(){return readJson(BASE+'videos.json');}).then(function(v){VIDEOS=(v&&Array.isArray(v.videos))?v:{videos:[]};})
-     .catch(function(){VIDEOS={videos:[]};});
+    p=readJson(DATA+'content.json').then(function(c){CONTENT=c;}).catch(function(){CONTENT=JSON.parse(JSON.stringify(DEFAULTS));})
+     .then(function(){return readJson(DATA+'videos.json');}).then(function(v){VIDEOS=(v&&Array.isArray(v.videos))?v:{videos:[]};})
+     .catch(function(){VIDEOS=JSON.parse(JSON.stringify(VIDEOS_INLINE));});
   }
   p.then(function(){
     renderVisitor();bindVisitor();
@@ -246,8 +259,9 @@ function renderGrid(){
   if(!list.length){grid.innerHTML='';empty.hidden=false;empty.textContent=VIDEOS.videos.length?'这个分类还没有视频':'示例视频整理中，敬请期待';return;}
   empty.hidden=true;
   grid.innerHTML=list.map(function(v){
-    var src=BASE+'videos/'+encodeURIComponent(v.file);
-    return '<div class="card" data-id="'+esc(v.id)+'"><div class="thumb"><video src="'+src+'" preload="metadata" muted playsinline></video><span class="play"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span></div><div class="ct">'+esc(v.title||'')+'</div></div>';
+    var src='videos/'+encodeURIComponent(v.file);
+    var poster='images/'+encodeURIComponent(stripExt(v.file))+'.jpg';
+    return '<div class="card" data-id="'+esc(v.id)+'"><div class="thumb"><video src="'+src+'" poster="'+poster+'" preload="metadata" muted playsinline type="video/mp4"></video><span class="play"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span></div><div class="ct">'+esc(v.title||'')+'</div></div>';
   }).join('');
   Array.prototype.forEach.call(grid.querySelectorAll('.card'),function(card){
     card.addEventListener('click',function(){var v=VIDEOS.videos.filter(function(x){return x.id===card.getAttribute('data-id');})[0];if(v)openPlayer(v);});
@@ -255,7 +269,7 @@ function renderGrid(){
 }
 function openPlayer(v){
   $('#pTitle').textContent=v.title||'';
-  var pv=$('#pVideo');pv.src=BASE+'videos/'+encodeURIComponent(v.file);
+  var pv=$('#pVideo');pv.src='videos/'+encodeURIComponent(v.file);
   $('#player').hidden=false;document.body.style.overflow='hidden';
   pv.play().catch(function(){});
 }
@@ -422,7 +436,7 @@ function bindAdmin(){
     var catOpts='<option value="">未分类</option>'+CONTENT.categories.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>';}).join('');
     box.innerHTML=VIDEOS.videos.map(function(v){
       return '<div class="vrow" data-id="'+esc(v.id)+'">'+
-        '<div class="vthumb"><video src="'+BASE+'videos/'+encodeURIComponent(v.file)+'" preload="metadata" muted playsinline></video></div>'+
+        '<div class="vthumb"><video src="videos/'+encodeURIComponent(v.file)+'" poster="images/'+encodeURIComponent(stripExt(v.file))+'.jpg" preload="metadata" muted playsinline type="video/mp4"></video></div>'+
         '<div class="vform">'+
           '<input class="vt" value="'+esc(v.title||'')+'" placeholder="标题">'+
           '<div class="r1"><select class="vc">'+catOpts+'</select></div>'+
