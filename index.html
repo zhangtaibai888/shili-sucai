@@ -201,6 +201,9 @@ var DEFAULTS={
   _admin:{password:'admin'}
 };
 var CONTENT=null, VIDEOS={videos:[]}, activeCat='all', unlocked=sessionStorage.getItem(SS_OK)==='1';
+/* 双环境自适应：github.io 同源用相对路径；其他环境（豆包短链发布页）用绝对地址加载数据和视频 */
+var BASE='';
+if(location.protocol!=='file:'&&location.hostname.indexOf('github.io')<0){BASE='https://zhangtaibai888.github.io/shili-sucai/';}
 
 function $(s){return document.querySelector(s);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
@@ -217,8 +220,8 @@ function init(){
     /* 本地双击预览：无服务器环境，直接用内置默认数据 */
     CONTENT=JSON.parse(JSON.stringify(DEFAULTS));VIDEOS={videos:[]};p=Promise.resolve();
   }else{
-    p=readJson('content.json').then(function(c){CONTENT=c;}).catch(function(){CONTENT=JSON.parse(JSON.stringify(DEFAULTS));})
-     .then(function(){return readJson('videos.json');}).then(function(v){VIDEOS=(v&&Array.isArray(v.videos))?v:{videos:[]};})
+    p=readJson(BASE+'content.json').then(function(c){CONTENT=c;}).catch(function(){CONTENT=JSON.parse(JSON.stringify(DEFAULTS));})
+     .then(function(){return readJson(BASE+'videos.json');}).then(function(v){VIDEOS=(v&&Array.isArray(v.videos))?v:{videos:[]};})
      .catch(function(){VIDEOS={videos:[]};});
   }
   p.then(function(){
@@ -243,7 +246,7 @@ function renderGrid(){
   if(!list.length){grid.innerHTML='';empty.hidden=false;empty.textContent=VIDEOS.videos.length?'这个分类还没有视频':'示例视频整理中，敬请期待';return;}
   empty.hidden=true;
   grid.innerHTML=list.map(function(v){
-    var src='videos/'+encodeURIComponent(v.file);
+    var src=BASE+'videos/'+encodeURIComponent(v.file);
     return '<div class="card" data-id="'+esc(v.id)+'"><div class="thumb"><video src="'+src+'" preload="metadata" muted playsinline></video><span class="play"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span></div><div class="ct">'+esc(v.title||'')+'</div></div>';
   }).join('');
   Array.prototype.forEach.call(grid.querySelectorAll('.card'),function(card){
@@ -252,7 +255,7 @@ function renderGrid(){
 }
 function openPlayer(v){
   $('#pTitle').textContent=v.title||'';
-  var pv=$('#pVideo');pv.src='videos/'+encodeURIComponent(v.file);
+  var pv=$('#pVideo');pv.src=BASE+'videos/'+encodeURIComponent(v.file);
   $('#player').hidden=false;document.body.style.overflow='hidden';
   pv.play().catch(function(){});
 }
@@ -419,7 +422,7 @@ function bindAdmin(){
     var catOpts='<option value="">未分类</option>'+CONTENT.categories.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>';}).join('');
     box.innerHTML=VIDEOS.videos.map(function(v){
       return '<div class="vrow" data-id="'+esc(v.id)+'">'+
-        '<div class="vthumb"><video src="videos/'+encodeURIComponent(v.file)+'" preload="metadata" muted playsinline></video></div>'+
+        '<div class="vthumb"><video src="'+BASE+'videos/'+encodeURIComponent(v.file)+'" preload="metadata" muted playsinline></video></div>'+
         '<div class="vform">'+
           '<input class="vt" value="'+esc(v.title||'')+'" placeholder="标题">'+
           '<div class="r1"><select class="vc">'+catOpts+'</select></div>'+
