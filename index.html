@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>素材拍摄示例</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23111'/%3E%3Cpath d='M9 7.5v9l8-4.5z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#ffffff;--ink:#111111;--sub:#666666;--faint:#999999;--line:#e5e5e5;--soft:#f7f7f7;--danger:#c0392b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+[hidden]{display:none!important;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px;}
+button{font-family:inherit;font-size:14px;border:none;background:none;cursor:pointer;color:inherit;}
+input,textarea,select{font-family:inherit;font-size:16px;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;background:#fff;}
+textarea{min-height:110px;resize:vertical;line-height:1.7;}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px;}
+main.wrap{padding-top:28px;padding-bottom:56px;}
+
+/* ===== 访客端 ===== */
+.intro{font-size:16px;color:var(--ink);white-space:pre-line;padding:18px 0 16px;border-bottom:1px solid var(--line);margin-bottom:16px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);color:var(--sub);background:#fff;min-height:44px;transition:border-color .15s,color .15s,background .15s;}
+.chip .cnt{font-size:12px;color:var(--faint);}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+.chip.on .cnt{color:rgba(255,255,255,.75);}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:820px){.grid{grid-template-columns:repeat(4,1fr);}}
+.card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;text-align:left;display:flex;flex-direction:column;}
+.card:active{opacity:.85;}
+.thumb{position:relative;aspect-ratio:9/16;background:#111;overflow:hidden;}
+.thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.play svg{width:20px;height:20px;fill:#fff;margin-left:2px;}
+.ct{font-size:14px;color:var(--ink);padding:9px 11px;line-height:1.4;word-break:break-all;}
+.empty{text-align:center;color:var(--faint);padding:48px 0;font-size:15px;}
+footer{border-top:1px solid var(--line);margin-top:28px;padding:18px 0 30px;color:var(--sub);font-size:14px;text-align:center;}
+footer .link{margin-top:14px;font-size:12px;color:var(--faint);text-decoration:none;display:inline-block;padding:8px 12px;}
+
+/* ===== 播放层 ===== */
+#player{position:fixed;inset:0;z-index:50;background:rgba(10,10,10,.93);display:flex;align-items:center;justify-content:center;}
+.pbox{position:relative;width:min(94vw,760px);text-align:center;}
+.pbox video{width:100%;max-height:80vh;background:#000;border-radius:10px;}
+.ptitle{color:#fff;font-size:15px;padding:0 8px 12px;}
+#pClose{position:absolute;top:-6px;right:-4px;width:44px;height:44px;border-radius:50%;color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);}
+
+/* ===== 管理后台 ===== */
+#admin{padding:24px 0 64px;}
+#admin main.wrap{padding-top:0;}
+.abtn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:8px;font-size:14px;background:var(--ink);color:#fff;}
+.abtn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);}
+.abtn.danger{background:#fff;color:var(--danger);border:1px solid var(--danger);}
+.abtn[disabled]{opacity:.4;cursor:not-allowed;}
+.card2{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;}
+.card2 h3{font-size:15px;font-weight:600;margin-bottom:12px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px;}
+.row{display:flex;gap:8px;align-items:center;}
+.row .grow{flex:1;min-width:0;}
+.hint{font-size:12px;color:var(--faint);margin-top:6px;line-height:1.6;}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:26px 14px;text-align:center;color:var(--sub);font-size:14px;background:var(--soft);margin-bottom:12px;cursor:pointer;}
+.drop.drag{border-color:var(--ink);background:#f0f0f0;}
+.drop .big{font-size:15px;color:var(--ink);font-weight:600;}
+.upinfo{font-size:13px;color:var(--sub);margin-top:8px;word-break:break-all;}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:10px;display:none;}
+.progress i{display:block;height:100%;width:0;background:var(--ink);transition:width .2s;}
+.vrow{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);}
+.vrow:last-child{border-bottom:none;}
+.vthumb{width:44px;flex-shrink:0;aspect-ratio:9/16;background:#111;border-radius:6px;overflow:hidden;}
+.vthumb video{width:100%;height:100%;object-fit:cover;display:block;}
+.vform{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+.vform .r1{display:flex;gap:6px;}
+.vform input{font-size:14px;padding:7px 9px;}
+.vform select{font-size:14px;padding:7px 9px;min-width:0;}
+.vacts{display:flex;gap:6px;flex-shrink:0;}
+.vacts .abtn{min-height:36px;padding:0 10px;font-size:13px;}
+.catline{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;margin:0 8px 8px 0;}
+.catline button{font-size:12px;color:var(--faint);padding:4px;}
+.catline button.del{color:var(--danger);}
+.cfgstatus{font-size:13px;margin-top:8px;word-break:break-all;}
+.cfgstatus.ok{color:#1a7f37;}
+.cfgstatus.err{color:var(--danger);}
+#shareUrl{font-size:14px;color:var(--ink);word-break:break-all;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.topbar .t{font-size:18px;font-weight:700;}
+#toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:rgba(17,17,17,.92);color:#fff;font-size:14px;padding:10px 18px;border-radius:8px;z-index:99;max-width:88vw;}
+</style>
+</head>
+<body>
+
+<!-- ===== 视图：访客端 ===== -->
+<div id="visitor">
+  <main class="wrap">
+    <section class="intro" id="introText"></section>
+    <nav class="chips" id="chips"></nav>
+    <section id="gridSec">
+      <div class="grid" id="grid"></div>
+      <p class="empty" id="empty" hidden></p>
+    </section>
+    <footer>
+      <p id="footerText"></p>
+    </footer>
+  </main>
+</div>
+
+<!-- ===== 视图：播放层 ===== -->
+<div id="player" hidden>
+  <div class="pbox">
+    <button id="pClose" aria-label="关闭">×</button>
+    <p class="ptitle" id="pTitle"></p>
+    <video id="pVideo" controls playsinline></video>
+  </div>
+</div>
+
+<!-- ===== 视图：管理后台 ===== -->
+<div id="admin" hidden>
+  <main class="wrap">
+    <div class="topbar">
+      <div class="t">管理后台</div>
+      <button class="abtn ghost" id="backBtn">返回访客端</button>
+    </div>
+
+    <div class="card2">
+      <h3>连接配置</h3>
+      <div class="field"><label>仓库地址（格式：用户名/仓库名）</label><input id="cfgRepo" placeholder="例如 yourname/shili-sucai" autocomplete="off"></div>
+      <div class="field"><label>GitHub Token（只存在本机浏览器，不会上传到任何服务器）</label><input id="cfgToken" placeholder="粘贴你的 Personal Access Token" autocomplete="off"></div>
+      <div class="row">
+        <button class="abtn" id="saveCfg">保存配置</button>
+        <button class="abtn ghost" id="testCfg">测试连接</button>
+      </div>
+      <p class="cfgstatus" id="cfgStatus"></p>
+      <p class="hint">Token 获取：GitHub → Settings → Developer settings → Personal access tokens → 新建 Fine-grained token，只勾选本仓库 Contents 的读写权限。</p>
+    </div>
+
+    <div class="card2">
+      <h3>上传视频</h3>
+      <div class="drop" id="drop"><div class="big">把视频拖到这里，或点击选择</div><div>支持 mp4 等格式，建议单个不超过 50MB</div></div>
+      <input type="file" id="upFile" accept="video/*" hidden>
+      <div class="row">
+        <div class="field grow" style="margin:0;"><label>标题</label><input id="upTitle" placeholder="例如：产品特写示范"></div>
+        <div class="field" style="margin:0;width:38%;"><label>分类</label><select id="upCat"></select></div>
+      </div>
+      <div style="margin-top:10px;"><button class="abtn" id="upBtn">上传</button></div>
+      <p class="upinfo" id="upInfo"></p>
+      <div class="progress" id="upProg"><i></i></div>
+    </div>
+
+    <div class="card2">
+      <h3>视频列表</h3>
+      <div style="margin-bottom:8px;text-align:right;"><button class="abtn ghost" id="scanBtn">扫描仓库，补录漏掉的视频</button></div>
+      <div id="vlist"></div>
+      <p class="empty" id="vempty" hidden></p>
+    </div>
+
+    <div class="card2">
+      <h3>分类管理</h3>
+      <div id="cats"></div>
+      <div class="row">
+        <input id="newCat" class="grow" placeholder="新分类名称" style="min-width:0;">
+        <button class="abtn" id="addCat">新增</button>
+      </div>
+    </div>
+
+    <div class="card2">
+      <h3>页面文字</h3>
+      <div class="field"><label>拍摄建议（客户打开页面看到的第一段文字）</label><textarea id="txtIntro"></textarea></div>
+      <div class="field"><label>页脚文字（如联系方式）</label><input id="txtFooter"></div>
+      <div class="field"><label>管理密码（下次进入后台时使用）</label><input id="txtPass" autocomplete="off"></div>
+      <button class="abtn" id="saveText">保存页面文字</button>
+    </div>
+
+    <div class="card2">
+      <h3>分享给客户</h3>
+      <p class="hint">客户链接：发给客户看（访客端，不显示任何管理入口）</p>
+      <p id="shareUrl"></p>
+      <div style="margin-top:10px;"><button class="abtn" id="copyUrl">复制客户链接</button></div>
+      <p class="hint">管理地址：你自己进后台用，页面上不显示入口</p>
+      <p id="adminUrl"></p>
+      <div style="margin-top:10px;"><button class="abtn ghost" id="copyAdminUrl">复制管理地址</button></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ===== 常量与状态 ===== */
+var LS_REPO='mz_repo', LS_TOKEN='mz_token', SS_OK='mz_admin_ok';
+var DEFAULTS={
+  intro:'拍摄建议（占位文字，可在管理后台修改）\n光线充足、画面稳定、背景整洁，是三条最基础的拍摄要求。',
+  footer:'联系方式：请在管理后台填写',
+  categories:[
+    {id:'koubo',name:'口播'},
+    {id:'jingwu',name:'产品空镜'},
+    {id:'mendian',name:'门店实拍'}
+  ],
+  _admin:{password:'admin'}
+};
+var CONTENT=null, VIDEOS={videos:[]}, activeCat='all', unlocked=sessionStorage.getItem(SS_OK)==='1';
+
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function stripExt(n){var i=n.lastIndexOf('.');return i>0?n.slice(0,i):n;}
+function toast(msg,isErr){var t=$('#toast');t.textContent=msg;t.hidden=false;t.style.background=isErr?'rgba(192,57,43,.95)':'rgba(17,17,17,.92)';clearTimeout(toast._t);toast._t=setTimeout(function(){t.hidden=true;},2600);}
+function readJson(url){return fetch(url+'?t='+Date.now()).then(function(r){if(!r.ok)throw new Error('load fail');return r.json();});}
+function catName(id){var c=CONTENT.categories.filter(function(x){return x.id===id;})[0];return c?c.name:'未分类';}
+function countIn(id){return VIDEOS.videos.filter(function(v){return id==='all'||v.category===id;}).length;}
+
+/* ===== 初始化 ===== */
+function init(){
+  var p;
+  if(location.protocol==='file:'){
+    /* 本地双击预览：无服务器环境，直接用内置默认数据 */
+    CONTENT=JSON.parse(JSON.stringify(DEFAULTS));VIDEOS={videos:[]};p=Promise.resolve();
+  }else{
+    p=readJson('content.json').then(function(c){CONTENT=c;}).catch(function(){CONTENT=JSON.parse(JSON.stringify(DEFAULTS));})
+     .then(function(){return readJson('videos.json');}).then(function(v){VIDEOS=(v&&Array.isArray(v.videos))?v:{videos:[]};})
+     .catch(function(){VIDEOS={videos:[]};});
+  }
+  p.then(function(){
+    renderVisitor();bindVisitor();
+    if(location.hash==='#admin')enterAdmin();
+  });
+}
+
+/* ===== 访客端渲染 ===== */
+function renderVisitor(){
+  $('#introText').textContent=CONTENT.intro||'';
+  $('#footerText').textContent=CONTENT.footer||'';
+  var cats=[{id:'all',name:'全部'}].concat(CONTENT.categories||[]);
+  $('#chips').innerHTML=cats.map(function(c){
+    return '<button class="chip'+(c.id===activeCat?' on':'')+'" data-cat="'+esc(c.id)+'">'+esc(c.name)+'<span class="cnt">'+countIn(c.id)+'</span></button>';
+  }).join('');
+  renderGrid();
+}
+function renderGrid(){
+  var list=VIDEOS.videos.filter(function(v){return activeCat==='all'||v.category===activeCat;});
+  var grid=$('#grid'),empty=$('#empty');
+  if(!list.length){grid.innerHTML='';empty.hidden=false;empty.textContent=VIDEOS.videos.length?'这个分类还没有视频':'示例视频整理中，敬请期待';return;}
+  empty.hidden=true;
+  grid.innerHTML=list.map(function(v){
+    var src='videos/'+encodeURIComponent(v.file);
+    return '<div class="card" data-id="'+esc(v.id)+'"><div class="thumb"><video src="'+src+'" preload="metadata" muted playsinline></video><span class="play"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span></div><div class="ct">'+esc(v.title||'')+'</div></div>';
+  }).join('');
+  Array.prototype.forEach.call(grid.querySelectorAll('.card'),function(card){
+    card.addEventListener('click',function(){var v=VIDEOS.videos.filter(function(x){return x.id===card.getAttribute('data-id');})[0];if(v)openPlayer(v);});
+  });
+}
+function openPlayer(v){
+  $('#pTitle').textContent=v.title||'';
+  var pv=$('#pVideo');pv.src='videos/'+encodeURIComponent(v.file);
+  $('#player').hidden=false;document.body.style.overflow='hidden';
+  pv.play().catch(function(){});
+}
+function closePlayer(){var pv=$('#pVideo');pv.pause();pv.removeAttribute('src');$('#player').hidden=true;document.body.style.overflow='';}
+function bindVisitor(){
+  $('#chips').addEventListener('click',function(e){
+    var b=e.target.closest('.chip');if(!b)return;
+    activeCat=b.getAttribute('data-cat');renderVisitor();
+  });
+  $('#pClose').addEventListener('click',closePlayer);
+  $('#player').addEventListener('click',function(e){if(e.target===$('#player'))closePlayer();});
+}
+
+/* ===== 管理后台 ===== */
+function enterAdmin(){
+  if(unlocked){showAdmin(true);return;}
+  var p=window.prompt('请输入管理密码');if(p===null)return;
+  if(p===(CONTENT._admin&&CONTENT._admin.password?CONTENT._admin.password:'admin')){unlocked=true;sessionStorage.setItem(SS_OK,'1');showAdmin(true);}
+  else toast('密码错误',true);
+}
+function showAdmin(on){
+  $('#visitor').hidden=on;$('#admin').hidden=!on;
+  window.scrollTo(0,0);
+  if(on)refreshAdmin();
+}
+function refreshAdmin(){
+  $('#cfgRepo').value=localStorage.getItem(LS_REPO)||'';
+  $('#cfgToken').value=localStorage.getItem(LS_TOKEN)||'';
+  $('#txtIntro').value=CONTENT.intro||'';
+  $('#txtFooter').value=CONTENT.footer||'';
+  $('#txtPass').value=(CONTENT._admin&&CONTENT._admin.password)||'';
+  $('#shareUrl').textContent=location.origin+location.pathname;
+  $('#adminUrl').textContent=location.origin+location.pathname+'#admin';
+  $('#upCat').innerHTML='<option value="">未分类</option>'+CONTENT.categories.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>';}).join('');
+  renderCats();renderVideoList();
+}
+
+/* ---- GitHub API ---- */
+function ghConf(){return {repo:localStorage.getItem(LS_REPO),token:localStorage.getItem(LS_TOKEN)};}
+function ghUrl(path){return 'https://api.github.com/repos/'+ghConf().repo+'/contents/'+path;}
+function ghHeaders(){return {Authorization:'Bearer '+ghConf().token,Accept:'application/vnd.github+json'};}
+function b64FromStr(s){var b=new TextEncoder().encode(s),out='',CH=0x8000,i;for(i=0;i<b.length;i+=CH){out+=btoa(String.fromCharCode.apply(null,b.subarray(i,i+CH)));}return out;}
+function strFromB64(b64){var bin=atob(b64),b=new Uint8Array(bin.length),i;for(i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return new TextDecoder().decode(b);}
+function ghGetJson(path){
+  var c=ghConf();if(!c.repo||!c.token)return Promise.reject(new Error('请先保存仓库和 Token'));
+  return fetch(ghUrl(path),{headers:ghHeaders()}).then(function(r){
+    if(r.status===404)return null;
+    if(!r.ok)return r.json().then(function(e){throw new Error(e.message||('读取失败 '+r.status));});
+    return r.json();
+  }).then(function(j){if(!j)return null;var obj;try{obj=JSON.parse(strFromB64(j.content));}catch(e){obj={};}return {obj:obj,sha:j.sha};});
+}
+function ghWriteJson(path,obj,msg){
+  var c=ghConf();if(!c.repo||!c.token)return Promise.reject(new Error('请先保存仓库和 Token'));
+  return ghGetJson(path).then(function(ex){
+    var body={message:msg,content:b64FromStr(JSON.stringify(obj,null,2))};
+    if(ex&&ex.sha)body.sha=ex.sha;
+    return fetch(ghUrl(path),{method:'PUT',headers:ghHeaders(),body:JSON.stringify(body)});
+  }).then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.message||('写入失败 '+r.status));});return true;});
+}
+function ghDeleteFile(path,msg){
+  var c=ghConf();
+  return fetch(ghUrl(path),{headers:ghHeaders()}).then(function(r){
+    if(r.status===404)return null;
+    if(!r.ok)return r.json().then(function(e){throw new Error(e.message||('读取失败 '+r.status));});
+    return r.json();
+  }).then(function(j){
+    if(!j)return null;
+    return fetch(ghUrl(path),{method:'DELETE',headers:ghHeaders(),body:JSON.stringify({message:msg,sha:j.sha})});
+  }).then(function(r){if(r&&!r.ok)return r.json().then(function(e){throw new Error(e.message||('删除失败 '+r.status));});return true;});
+}
+function xhrPut(path,b64,msg,onProg){
+  var c=ghConf();
+  return new Promise(function(res,rej){
+    var x=new XMLHttpRequest();
+    x.open('PUT',ghUrl(path));
+    x.setRequestHeader('Authorization','Bearer '+c.token);
+    x.setRequestHeader('Accept','application/vnd.github+json');
+    x.setRequestHeader('Content-Type','application/json');
+    x.upload.onprogress=function(e){if(e.lengthComputable&&onProg)onProg(e.loaded/e.total);};
+    x.onload=function(){
+      if(x.status>=200&&x.status<300)res(true);
+      else{var m='上传失败 '+x.status;try{m=(JSON.parse(x.responseText).message)||m;}catch(e){}rej(new Error(m));}
+    };
+    x.onerror=function(){rej(new Error('网络错误'));};
+    x.send(JSON.stringify({message:msg,content:b64}));
+  });
+}
+function ghTree(){
+  var c=ghConf();
+  return fetch('https://api.github.com/repos/'+c.repo+'/git/trees/HEAD?recursive=1',{headers:ghHeaders()}).then(function(r){
+    if(!r.ok)return r.json().then(function(e){throw new Error(e.message||('读取失败 '+r.status));});
+    return r.json();
+  });
+}
+
+/* ---- 配置 ---- */
+function bindAdmin(){
+  $('#saveCfg').addEventListener('click',function(){
+    var repo=$('#cfgRepo').value.trim(),token=$('#cfgToken').value.trim();
+    if(!/^[^/]+\/[^/]+$/.test(repo)){toast('仓库格式应为：用户名/仓库名',true);return;}
+    if(!token){toast('请粘贴 Token',true);return;}
+    localStorage.setItem(LS_REPO,repo);localStorage.setItem(LS_TOKEN,token);
+    toast('配置已保存');testCfg();
+  });
+  $('#testCfg').addEventListener('click',testCfg);
+  function testCfg(){
+    var st=$('#cfgStatus'),c=ghConf();
+    if(!c.repo||!c.token){st.className='cfgstatus err';st.textContent='请先保存仓库和 Token';return;}
+    st.className='cfgstatus';st.textContent='正在测试…';
+    fetch('https://api.github.com/repos/'+c.repo,{headers:ghHeaders()}).then(function(r){
+      if(r.ok){st.className='cfgstatus ok';st.textContent='连接正常：'+c.repo;}
+      else if(r.status===404){st.className='cfgstatus err';st.textContent='仓库不存在或 Token 无权访问该仓库';}
+      else if(r.status===401){st.className='cfgstatus err';st.textContent='Token 无效或已过期';}
+      else{st.className='cfgstatus err';st.textContent='连接失败：'+r.status;}
+    }).catch(function(){st.className='cfgstatus err';st.textContent='网络错误';});
+  }
+  $('#backBtn').addEventListener('click',function(){showAdmin(false);renderVisitor();try{history.replaceState(null,'',location.pathname+location.search);}catch(e){location.hash='';}});
+
+  /* ---- 上传 ---- */
+  var drop=$('#drop'),fileInput=$('#upFile'),picked=null;
+  drop.addEventListener('click',function(){fileInput.click();});
+  fileInput.addEventListener('change',function(){picked=fileInput.files[0]||null;showPick();});
+  ['dragenter','dragover'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('drag');});});
+  ['dragleave','drop'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('drag');});});
+  drop.addEventListener('drop',function(e){var f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f&&f.type.indexOf('video')===0){picked=f;fileInput.value='';showPick();}else if(f){toast('请选择视频文件',true);}});
+  function showPick(){
+    if(!picked){$('#upInfo').textContent='';return;}
+    var mb=(picked.size/1024/1024).toFixed(1);
+    $('#upInfo').textContent='已选择：'+picked.name+'（'+mb+'MB）'+((mb>50)?'　警告：超过 50MB，上传可能失败':'' )+'';
+  }
+  $('#upBtn').addEventListener('click',function(){
+    if(!picked){toast('请先选择视频',true);return;}
+    var btn=$('#upBtn');btn.disabled=true;
+    var prog=$('#upProg');prog.style.display='block';prog.querySelector('i').style.width='0';
+    doUpload(picked,function(p){prog.querySelector('i').style.width=Math.round(p*100)+'%';})
+    .then(function(){toast('上传成功');picked=null;fileInput.value='';$('#upTitle').value='';showPick();prog.style.display='none';})
+    .catch(function(e){toast(e.message||'上传失败',true);prog.style.display='none';})
+    .then(function(){btn.disabled=false;});
+  });
+  function doUpload(file,onProg){
+    var name=(file.name||'video.mp4').split(/[\\/]/).pop();
+    if(!name)name='video.mp4';
+    var title=$('#upTitle').value.trim()||stripExt(name),cat=$('#upCat').value;
+    return ghGetJson('videos/'+name).then(function(ex){
+      var finalName=name;
+      if(ex){var d=finalName.lastIndexOf('.'),base=(d>0?finalName.slice(0,d):finalName)+'-';finalName=base+Math.floor(Date.now()%100000)+((d>0)?finalName.slice(d):'');}
+      return new Promise(function(res,rej){
+        var fr=new FileReader();fr.onload=function(){res(fr.result.split(',')[1]);};fr.onerror=function(){rej(new Error('读取文件失败'));};fr.readAsDataURL(file);
+      }).then(function(b64){return xhrPut('videos/'+finalName,b64,'上传视频 '+title,onProg).then(function(){return finalName;});});
+    }).then(function(finalName){
+      return ghGetJson('videos.json').then(function(ex){
+        var obj=(ex&&ex.obj&&Array.isArray(ex.obj.videos))?ex.obj:{videos:[]};
+        obj.videos.push({id:'v'+Date.now(),file:finalName,title:title,category:cat});
+        return ghWriteJson('videos.json',obj,'更新视频索引');
+      });
+    });
+  }
+
+  /* ---- 列表 ---- */
+  function renderVideoList(){
+    var box=$('#vlist');
+    if(!VIDEOS.videos.length){box.innerHTML='';$('#vempty').hidden=false;$('#vempty').textContent='还没有视频，先在“上传视频”里传第一条。';return;}
+    $('#vempty').hidden=true;
+    var catOpts='<option value="">未分类</option>'+CONTENT.categories.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>';}).join('');
+    box.innerHTML=VIDEOS.videos.map(function(v){
+      return '<div class="vrow" data-id="'+esc(v.id)+'">'+
+        '<div class="vthumb"><video src="videos/'+encodeURIComponent(v.file)+'" preload="metadata" muted playsinline></video></div>'+
+        '<div class="vform">'+
+          '<input class="vt" value="'+esc(v.title||'')+'" placeholder="标题">'+
+          '<div class="r1"><select class="vc">'+catOpts+'</select></div>'+
+        '</div>'+
+        '<div class="vacts"><button class="abtn vsave">保存</button><button class="abtn danger vdel">删除</button></div>'+
+      '</div>';
+    }).join('');
+    VIDEOS.videos.forEach(function(v){
+      var row=box.querySelector('[data-id="'+esc(v.id)+'"]');if(!row)return;
+      row.querySelector('.vc').value=v.category||'';
+      row.querySelector('.vsave').addEventListener('click',function(){
+        var nt=row.querySelector('.vt').value.trim()||'未命名视频',nc=row.querySelector('.vc').value;
+        v.title=nt;v.category=nc;
+        ghWriteJson('videos.json',VIDEOS,'更新视频信息').then(function(){toast('已保存');refreshAdmin();renderVisitor();}).catch(function(e){toast(e.message,true);});
+      });
+      row.querySelector('.vdel').addEventListener('click',function(){
+        if(!window.confirm('确定删除「'+(v.title||v.file)+'」？视频文件和列表记录都会删除。'))return;
+        var idx=VIDEOS.videos.indexOf(v);
+        VIDEOS.videos.splice(idx,1);
+        ghWriteJson('videos.json',VIDEOS,'删除视频记录').then(function(){return ghDeleteFile('videos/'+v.file,'删除视频文件');})
+        .then(function(){toast('已删除');refreshAdmin();renderVisitor();})
+        .catch(function(e){toast(e.message||'删除失败',true);refreshAdmin();});
+      });
+    });
+  }
+  $('#scanBtn').addEventListener('click',function(){
+    ghTree().then(function(t){
+      var files=(t.tree||[]).filter(function(n){return n.type==='blob'&&n.path.indexOf('videos/')===0;}).map(function(n){return n.path.slice('videos/'.length);});
+      if(!files.length){toast('仓库里没有发现 videos/ 下的视频文件');return;}
+      var obj=JSON.parse(JSON.stringify(VIDEOS));
+      var have={};obj.videos.forEach(function(v){have[v.file]=1;});
+      var added=0;files.forEach(function(f){if(!have[f]){obj.videos.push({id:'v'+Date.now()+added,file:f,title:stripExt(f),category:''});added++;}});
+      if(!added){toast('已是最新，无需补录');return;}
+      ghWriteJson('videos.json',obj,'扫描补录视频').then(function(){VIDEOS=obj;toast('补录 '+added+' 条');refreshAdmin();renderVisitor();}).catch(function(e){toast(e.message,true);});
+    }).catch(function(e){toast(e.message||'扫描失败',true);});
+  });
+
+  /* ---- 分类 ---- */
+  function renderCats(){
+    var box=$('#cats');
+    if(!CONTENT.categories.length){box.innerHTML='<p class="hint">还没有分类。</p>';}
+    else{
+      box.innerHTML=CONTENT.categories.map(function(c){
+        return '<span class="catline"><span>'+esc(c.name)+'</span><button class="catren" data-id="'+esc(c.id)+'">改名</button><button class="del catdel" data-id="'+esc(c.id)+'">删除</button></span>';
+      }).join('');
+    }
+    Array.prototype.forEach.call(box.querySelectorAll('.catren'),function(b){
+      b.addEventListener('click',function(){
+        var c=CONTENT.categories.filter(function(x){return x.id===b.getAttribute('data-id');})[0];if(!c)return;
+        var n=window.prompt('新的分类名称',c.name);if(n===null)return;n=n.trim();if(!n){toast('名称不能为空',true);return;}
+        c.name=n;saveContent().then(function(){toast('已改名');refreshAdmin();renderVisitor();}).catch(function(e){toast(e.message,true);});
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll('.catdel'),function(b){
+      b.addEventListener('click',function(){
+        var c=CONTENT.categories.filter(function(x){return x.id===b.getAttribute('data-id');})[0];if(!c)return;
+        if(!window.confirm('删除分类「'+c.name+'」？该类下的视频会变成“未分类”。'))return;
+        var idx=CONTENT.categories.indexOf(c);CONTENT.categories.splice(idx,1);
+        var touched=false;
+        VIDEOS.videos.forEach(function(v){if(v.category===c.id){v.category='';touched=true;}});
+        var w=saveContent();
+        if(touched)w=w.then(function(){return ghWriteJson('videos.json',VIDEOS,'整理分类');});
+        w.then(function(){toast('已删除');refreshAdmin();renderVisitor();}).catch(function(e){toast(e.message,true);});
+      });
+    });
+  }
+  $('#addCat').addEventListener('click',function(){
+    var n=$('#newCat').value.trim();if(!n){toast('请输入分类名称',true);return;}
+    CONTENT.categories.push({id:'c'+Date.now(),name:n});
+    $('#newCat').value='';
+    saveContent().then(function(){toast('已新增');refreshAdmin();renderVisitor();}).catch(function(e){toast(e.message,true);});
+  });
+
+  /* ---- 文字 ---- */
+  $('#saveText').addEventListener('click',function(){
+    CONTENT.intro=$('#txtIntro').value;
+    CONTENT.footer=$('#txtFooter').value;
+    CONTENT._admin=CONTENT._admin||{};CONTENT._admin.password=$('#txtPass').value||'admin';
+    saveContent().then(function(){toast('页面文字已保存');renderVisitor();}).catch(function(e){toast(e.message,true);});
+  });
+  function saveContent(){return ghWriteJson('content.json',CONTENT,'更新页面内容');}
+
+  /* ---- 分享 ---- */
+  $('#copyUrl').addEventListener('click',function(){
+    var url=$('#shareUrl').textContent;
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(function(){toast('客户链接已复制');},function(){fallbackCopy(url);});}
+    else fallbackCopy(url);
+  });
+  $('#copyAdminUrl').addEventListener('click',function(){
+    var url=$('#adminUrl').textContent;
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(function(){toast('管理地址已复制');},function(){fallbackCopy(url);});}
+    else fallbackCopy(url);
+  });
+  function fallbackCopy(text){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('链接已复制');}catch(e){toast('复制失败，请手动复制上方链接',true);}document.body.removeChild(ta);}
+}
+
+/* ===== 启动 ===== */
+init();
+bindAdmin();
+})();
+</script>
+</body>
+</html>
